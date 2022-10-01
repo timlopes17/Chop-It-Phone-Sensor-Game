@@ -1,1 +1,1 @@
-# SmartSensingProject
+# Chop It Phone Sensor Game
