@@ -1,6 +1,7 @@
 package edu.temple.chopitgame
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -20,6 +21,8 @@ class MainActivity : AppCompatActivity() {
         val butWidth = button.layoutParams.width
         val butHeight = button.layoutParams.height
 
+        val launchIntent = Intent(this, GameActivity::class.java)
+
         button.setOnTouchListener(object : View.OnTouchListener {
             override fun onTouch(v: View?, event: MotionEvent?): Boolean {
                 when (event?.action) {
@@ -36,6 +39,8 @@ class MainActivity : AppCompatActivity() {
                         button.layoutParams.width = butWidth
                         button.requestLayout()
                         button.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                        // start your next activity
+                        startActivity(launchIntent)
                         Log.d("Test", "UP")
                     }
                 }
