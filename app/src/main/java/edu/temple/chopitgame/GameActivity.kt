@@ -1,5 +1,11 @@
 package edu.temple.chopitgame
 
+import android.content.Context
+import android.content.pm.ActivityInfo
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.SoundPool
@@ -17,11 +23,25 @@ import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.random.Random
 import android.os.Looper
+import android.util.TypedValue
+import org.w3c.dom.Text
+import kotlin.math.roundToInt
 
 
+class GameActivity : AppCompatActivity(), SensorEventListener {
 
+    private lateinit var sensorManager: SensorManager
+    private lateinit var sensorAccel : Sensor
+    private lateinit var sensorMagnet : Sensor
 
-class GameActivity : AppCompatActivity() {
+    private var accelData = FloatArray(3)
+    private var magnetData = FloatArray(3)
+
+    private lateinit var pitchText : TextView
+    private lateinit var azimuthText : TextView
+    private lateinit var rollText : TextView
+
+    private val drift = 0.05f
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +52,7 @@ class GameActivity : AppCompatActivity() {
         val butWidth = button.layoutParams.width
         val butHeight = button.layoutParams.height
         val text = findViewById<TextView>(R.id.text)
+        val score = findViewById<TextView>(R.id.score)
 
         var background = MediaPlayer.create(this, R.raw.background)
         background.start()
@@ -50,24 +71,88 @@ class GameActivity : AppCompatActivity() {
 
         var event : EventObject
         var speed : Float
+        var size : Float = 80F
 
-        // 3000 -> 1500
-        // 1 -> 1.2
-        // y = 600/x + 0.8
+        sensorManager = getSystemService((Context.SENSOR_SERVICE)) as SensorManager
+        sensorAccel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        sensorMagnet = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
+
+        azimuthText = findViewById(R.id.a_val)
+        pitchText = findViewById(R.id.p_val)
+        rollText = findViewById(R.id.r_val)
+
         thread(start = true){
+            Thread.sleep(500)
             for(n in 0..49){
                 speed = 600F/timeBetween + 0.8F
                 event = events[Random.nextInt(0, 6)]
-                Handler(Looper.getMainLooper()).post(Runnable { text.text = event.title.toString() })
-                //text.text = event.title
+                size += 1F
+                Handler(Looper.getMainLooper()).post(Runnable {
+                    text.text = event.title.toString()
+                    score.text = n.toString()
+                    score.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+                })
                 soundPool?.play(event.soundId, 1F, 1F, 0, 0, speed)
-                Log.d("Game", event.title)
-                Log.d("Game", "Speed: $speed")
-                Log.d("Game", "TimeBetween: $timeBetween")
-                Thread.sleep(timeBetween)
+                //Log.d("Game", event.title)
+                //Log.d("Game", "Speed: $speed")
+                //Log.d("Game", "TimeBetween: $timeBetween")
+                //Log.d("Game", "Textsize: ${score.textSize}")
+                Thread.sleep(500)
+                event = events[3]
+                if(event.title == "Flip It")
+                {
+
+                }
+                Thread.sleep(timeBetween - 500)
                 timeBetween -= 10
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        sensorManager.registerListener(this, sensorAccel, SensorManager.SENSOR_DELAY_NORMAL)
+        sensorManager.registerListener(this, sensorMagnet, SensorManager.SENSOR_DELAY_NORMAL)
+    }
+
+    override fun onStop() {
+        super.onStop()
+
+        sensorManager.unregisterListener(this)
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        var sensorType = event?.sensor?.type
+
+        when (sensorType) {
+            Sensor.TYPE_ACCELEROMETER -> {
+                accelData = event!!.values.clone()
+            }
+            Sensor.TYPE_MAGNETIC_FIELD -> {
+                magnetData = event!!.values.clone()
+            }
+            else -> {
+                return
+            }
+        }
+
+        var rotationMatrix = FloatArray(9)
+        var rotOK = SensorManager.getRotationMatrix(rotationMatrix, null, accelData, magnetData)
+        var orientationValues = FloatArray(3)
+
+        if(rotOK)
+            SensorManager.getOrientation(rotationMatrix, orientationValues)
+
+        var azimuth = orientationValues[0]
+        var pitch = orientationValues[1]
+        var roll = orientationValues[2]
+
+        azimuthText.text = azimuth.toString()
+        pitchText.text = pitch.toString()
+        rollText.text = roll.toString()
+    }
+
+    override fun onAccuracyChanged(p0: Sensor?, p1: Int) {
 
     }
 }
