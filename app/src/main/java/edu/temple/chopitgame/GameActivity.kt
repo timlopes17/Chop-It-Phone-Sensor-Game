@@ -249,11 +249,15 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             }
             //Twist
             if(record == 4){
-
+                if (maxRoll - minRoll >= 150){
+                    correct()
+                }
             }
             //Spin
             if(record == 5){
-
+                if (maxAzimuth - minAzimuth >= 80) {
+                    correct()
+                }
             }
         }
         else if(record == 2){
