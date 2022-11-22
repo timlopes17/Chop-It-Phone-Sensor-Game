@@ -16,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val button = findViewById<ImageView>(R.id.button);
+        val button = findViewById<ImageView>(R.id.button)
         val layout = findViewById<View>(R.id.layout)
         val butWidth = button.layoutParams.width
         val butHeight = button.layoutParams.height

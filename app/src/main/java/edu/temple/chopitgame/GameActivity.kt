@@ -110,6 +110,8 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                         }
                         else
                         {
+                            soundPool.release()
+                            n = -17
                             launchIntent.putExtra("score", myScore)
                             startActivity(launchIntent)
                         }
@@ -142,10 +144,14 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         rollText = findViewById(R.id.r_val)
         lightText = findViewById(R.id.l_val)
 
-        azimuthText.visibility = View.INVISIBLE
-        pitchText.visibility = View.INVISIBLE
-        rollText.visibility = View.INVISIBLE
-        lightText.visibility = View.INVISIBLE
+        findViewById<TextView>(R.id.label_azimuth).visibility = View.GONE
+        findViewById<TextView>(R.id.label_pitch).visibility = View.GONE
+        findViewById<TextView>(R.id.label_roll).visibility = View.GONE
+        findViewById<TextView>(R.id.label_light).visibility = View.GONE
+        azimuthText.visibility = View.GONE
+        pitchText.visibility = View.GONE
+        rollText.visibility = View.GONE
+        lightText.visibility = View.GONE
 
         var oldN : Int
 
@@ -154,8 +160,8 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             while (n != 50 && n != -17) {
                 oldN = n
                 speed = 600F / timeBetween + 0.8F
-                event = events[2]
-                //event = events[Random.nextInt(0, 6)]
+                //event = events[2] TESTING
+                event = events[Random.nextInt(0, 6)]
                 Handler(Looper.getMainLooper()).post(Runnable {
                     text.text = event.title.toString()
                 })
@@ -196,7 +202,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                     )
                     record = 2
                 }
-                Thread.sleep(2000 + timeBetween - 500)
+                Thread.sleep(timeBetween - 500)
                 timeBetween -= 10
                 if (n == oldN){
                     Log.d("Game", "YOU LOSE")
@@ -247,6 +253,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
     override fun onStop() {
         super.onStop()
+        soundPool.release()
         sensorManager.unregisterListener(this)
         background.release()
     }
@@ -329,7 +336,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             Log.d("GAME", "Light Updated $lx")
 
             lightText.text = lx.toString()
-            if(lx < 1.0 && lx > 0.0){
+            if(lx < 3.0 && lx > 0.0){
                 correct()
             }
         }

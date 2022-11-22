@@ -11,7 +11,9 @@
         android:theme="@style/Theme.ChopItGame">
         <activity
             android:name=".LoseActivity"
-            android:exported="false" />
+            android:configChanges="orientation"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".GameActivity"
             android:configChanges="orientation"
