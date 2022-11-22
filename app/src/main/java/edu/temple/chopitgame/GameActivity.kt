@@ -1,6 +1,8 @@
 package edu.temple.chopitgame
 
+import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -24,6 +26,7 @@ import kotlin.concurrent.thread
 import kotlin.random.Random
 import android.os.Looper
 import android.util.TypedValue
+import android.view.MotionEvent
 import org.w3c.dom.Text
 import kotlin.math.max
 import kotlin.math.min
@@ -59,10 +62,12 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     private lateinit var soundPool : SoundPool
     private var correctID : Int = 0
     private lateinit var background : MediaPlayer
-    var doubleMove = 0
+    private var doubleMove = 0
+    private var myScore = 0
 
     private val drift = 0.05f
 
+    @SuppressLint("ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_game)
@@ -80,6 +85,8 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
 
         soundPool = SoundPool.Builder().build()
 
+        val launchIntent = Intent(this, LoseActivity::class.java)
+
         val events = arrayOf(
             EventObject("Click It", soundPool.load(baseContext, R.raw.click, 1)),
             EventObject("Chop It", soundPool.load(baseContext, R.raw.chop, 1)),
@@ -88,6 +95,36 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             EventObject("Twist It", soundPool.load(baseContext, R.raw.twist, 1)),
             EventObject("Spin It", soundPool.load(baseContext, R.raw.spin, 1)),
         )
+
+        button.setOnTouchListener(object : View.OnTouchListener {
+            @SuppressLint("ClickableViewAccessibility")
+            override fun onTouch(v: View?, event: MotionEvent?): Boolean {
+                when (event?.action) {
+                    MotionEvent.ACTION_DOWN -> {
+                        button.layoutParams.height = butHeight - 30
+                        button.layoutParams.width = butWidth - 30
+                        button.requestLayout()
+                        button.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                        if(record == 0){
+                            correct()
+                        }
+                        else
+                        {
+                            launchIntent.putExtra("score", myScore)
+                            startActivity(launchIntent)
+                        }
+                        return true
+                    }
+                    MotionEvent.ACTION_UP -> {
+                        button.layoutParams.height = butHeight
+                        button.layoutParams.width = butWidth
+                        button.requestLayout()
+                        button.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                    }
+                }
+                return false
+            }
+        })
 
         correctID = soundPool.load(baseContext, R.raw.correct, 1)
 
@@ -99,10 +136,16 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         sensorMagnet = sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)
         sensorLight = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
 
+        //Used for testing sensors
         azimuthText = findViewById(R.id.a_val)
         pitchText = findViewById(R.id.p_val)
         rollText = findViewById(R.id.r_val)
         lightText = findViewById(R.id.l_val)
+
+        azimuthText.visibility = View.INVISIBLE
+        pitchText.visibility = View.INVISIBLE
+        rollText.visibility = View.INVISIBLE
+        lightText.visibility = View.INVISIBLE
 
         var oldN : Int
 
@@ -111,7 +154,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             while (n != 50 && n != -17) {
                 oldN = n
                 speed = 600F / timeBetween + 0.8F
-                event = events[1]
+                event = events[2]
                 //event = events[Random.nextInt(0, 6)]
                 Handler(Looper.getMainLooper()).post(Runnable {
                     text.text = event.title.toString()
@@ -121,7 +164,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                 //Log.d("Game", "Speed: $speed")
                 //Log.d("Game", "TimeBetween: $timeBetween")
                 //Log.d("Game", "Textsize: ${score.textSize}")
-                Thread.sleep(500)
+                Thread.sleep(250)
                 if (event.title == "Flip It" || event.title == "Chop It" ||
                     event.title == "Twist It" || event.title == "Spin It") {
                     sensorManager.registerListener(
@@ -134,15 +177,33 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                         sensorMagnet,
                         SensorManager.SENSOR_DELAY_NORMAL
                     )
-                    if(event.title == "Flip It")
-                        record = 3
                     if(event.title == "Chop It")
                         record = 1
+                    else if(event.title == "Flip It")
+                        record = 3
+                    else if(event.title == "Twist It")
+                        record = 4
+                    else
+                        record = 5
                 }
-                Thread.sleep(5000 + timeBetween - 500)
+                else if(event.title == "Click It")
+                    record = 0
+                else {
+                    sensorManager.registerListener(
+                        this,
+                        sensorLight,
+                        SensorManager.SENSOR_DELAY_FASTEST
+                    )
+                    record = 2
+                }
+                Thread.sleep(2000 + timeBetween - 500)
                 timeBetween -= 10
-                if (n == oldN)
+                if (n == oldN){
                     Log.d("Game", "YOU LOSE")
+                    launchIntent.putExtra("score", myScore)
+                    startActivity(launchIntent)
+                    n = -17
+                }
             }
             soundPool.release()
         }
@@ -151,6 +212,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
     fun correct() {
         val score = findViewById<TextView>(R.id.score)
         n += 1
+        myScore = n
         size += 1F
         soundPool.play(correctID, 0.5F, 0.5F, 0, 0, 1F)
         Handler(Looper.getMainLooper()).post(Runnable {
@@ -242,19 +304,19 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                 }
             }
             //Flip
-            if(record == 3){
+            else if(record == 3){
                 if(maxPitch - minPitch >= 60){
                     correct()
                 }
             }
             //Twist
-            if(record == 4){
+            else if(record == 4){
                 if (maxRoll - minRoll >= 150){
                     correct()
                 }
             }
             //Spin
-            if(record == 5){
+            else if(record == 5){
                 if (maxAzimuth - minAzimuth >= 80) {
                     correct()
                 }
@@ -264,7 +326,12 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             //Light
             var lx = lightData[0]
 
+            Log.d("GAME", "Light Updated $lx")
+
             lightText.text = lx.toString()
+            if(lx < 1.0 && lx > 0.0){
+                correct()
+            }
         }
     }
 

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Chop It Game</string>
+    <string name="saved_high_score_key">0</string>
 </resources>
