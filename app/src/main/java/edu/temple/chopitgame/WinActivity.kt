@@ -1,9 +1,7 @@
 package edu.temple.chopitgame
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.media.SoundPool
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,11 +12,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import kotlin.concurrent.thread
 
-class LoseActivity : AppCompatActivity() {
+class WinActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n", "ClickableViewAccessibility")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_lose)
+        setContentView(R.layout.activity_win)
 
         val tryAgain = findViewById<ImageView>(R.id.tryAgain)
         val layout = findViewById<View>(R.id.layout)
@@ -34,11 +32,11 @@ class LoseActivity : AppCompatActivity() {
         val myScore = intent.getIntExtra("score", -1)
 
         var sPool: SoundPool = SoundPool.Builder().build()
-        var sound = sPool.load(baseContext, R.raw.wrong, 1)
+        var sound = sPool.load(baseContext, R.raw.win, 1)
 
         thread(start = true) {
             Thread.sleep(100)
-            sPool.play(sound, 0.3F, 0.3F, 0, 0, 1F)
+            sPool.play(sound, 0.5F, 0.5F, 0, 0, 1F)
         }
 
         score.text = "Score: $myScore"

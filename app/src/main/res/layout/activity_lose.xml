@@ -78,4 +78,16 @@ tools:context=".LoseActivity">
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toBottomOf="@+id/tryAgain" />
+
+<ImageView
+        android:id="@+id/highScore"
+        android:layout_width="124dp"
+        android:layout_height="96dp"
+        app:layout_constraintBottom_toTopOf="@+id/tryAgain"
+        app:layout_constraintEnd_toEndOf="@+id/highscoreText"
+        app:layout_constraintHorizontal_bias="0.086"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/loseText"
+        app:srcCompat="@drawable/newhighscore"
+        tools:visibility="invisible" />
 </androidx.constraintlayout.widget.ConstraintLayout>

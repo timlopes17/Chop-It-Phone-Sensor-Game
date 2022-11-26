@@ -3,34 +3,25 @@ package edu.temple.chopitgame
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ActivityInfo
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.media.AudioManager
 import android.media.MediaPlayer
 import android.media.SoundPool
-import android.media.metrics.Event
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.provider.MediaStore
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-import android.widget.Toast
-import kotlin.concurrent.fixedRateTimer
 import kotlin.concurrent.thread
 import kotlin.random.Random
 import android.os.Looper
 import android.util.TypedValue
 import android.view.MotionEvent
-import org.w3c.dom.Text
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 
 class GameActivity : AppCompatActivity(), SensorEventListener {
@@ -76,7 +67,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         val layout = findViewById<View>(R.id.layout)
         val butWidth = button.layoutParams.width
         val butHeight = button.layoutParams.height
-        val text = findViewById<TextView>(R.id.text)
+        val text = findViewById<TextView>(R.id.titleText)
         val score = findViewById<TextView>(R.id.score)
 
         background = MediaPlayer.create(this, R.raw.background)
@@ -86,6 +77,7 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         soundPool = SoundPool.Builder().build()
 
         val launchIntent = Intent(this, LoseActivity::class.java)
+        val winIntent = Intent(this, WinActivity::class.java)
 
         val events = arrayOf(
             EventObject("Click It", soundPool.load(baseContext, R.raw.click, 1)),
@@ -166,10 +158,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                     text.text = event.title.toString()
                 })
                 soundPool?.play(event.soundId, 1F, 1F, 0, 0, speed)
-                //Log.d("Game", event.title)
-                //Log.d("Game", "Speed: $speed")
-                //Log.d("Game", "TimeBetween: $timeBetween")
-                //Log.d("Game", "Textsize: ${score.textSize}")
                 Thread.sleep(250)
                 if (event.title == "Flip It" || event.title == "Chop It" ||
                     event.title == "Twist It" || event.title == "Spin It") {
@@ -205,11 +193,14 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
                 Thread.sleep(timeBetween - 500)
                 timeBetween -= 10
                 if (n == oldN){
-                    Log.d("Game", "YOU LOSE")
                     launchIntent.putExtra("score", myScore)
                     startActivity(launchIntent)
                     n = -17
                 }
+            }
+            if(n == 50) {
+                winIntent.putExtra("score", myScore)
+                startActivity(winIntent)
             }
             soundPool.release()
         }
@@ -225,7 +216,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
             score.text = n.toString()
             score.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
         })
-        Log.d("Game", "CORRECT")
         record = -1
         minPitch = 180.0
         maxPitch = -180.0
@@ -241,7 +231,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         sPool.play(sound, 1F, 1F, 0, 0, 1F)
         n = -17
         record = -1
-        Log.d("Game", "LOSE")
     }
 
     override fun onStart() {
@@ -332,8 +321,6 @@ class GameActivity : AppCompatActivity(), SensorEventListener {
         else if(record == 2){
             //Light
             var lx = lightData[0]
-
-            Log.d("GAME", "Light Updated $lx")
 
             lightText.text = lx.toString()
             if(lx < 3.0 && lx > 0.0){

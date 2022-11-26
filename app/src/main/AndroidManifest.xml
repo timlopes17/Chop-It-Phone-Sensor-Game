@@ -10,10 +10,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ChopItGame">
         <activity
-            android:name=".LoseActivity"
+            android:name=".WinActivity"
             android:configChanges="orientation"
             android:exported="false"
             android:screenOrientation="portrait"/>
+        <activity
+            android:name=".LoseActivity"
+            android:configChanges="orientation"
+            android:exported="false"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".GameActivity"
             android:configChanges="orientation"
