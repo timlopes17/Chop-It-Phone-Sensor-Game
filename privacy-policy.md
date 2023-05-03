@@ -1,6 +1,6 @@
 Privacy Policy
 
-This Privacy Policy describes how we collect, use, and share your personal information when you download and use our Android game ("Game").
+This Privacy Policy describes how we collect, use, and share your personal information when you download and use our Android game Chop It!.
 
 Information We Collect
 
